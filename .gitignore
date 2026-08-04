@@ -216,3 +216,11 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Project data & generated outputs
+Medicines.v17i.coco/
+genuine_split/
+fakes/
+models/
+trace_system/data/
+trace_system/static/
