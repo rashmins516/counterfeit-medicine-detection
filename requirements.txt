@@ -1,0 +1,11 @@
+# MVP runtime
+pillow
+numpy
+psycopg2-binary
+neo4j
+fastapi
+uvicorn
+
+# Optional future services
+# fastapi
+# uvicorn
