@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trace Platform MVP</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 24px; background: #f7f7f7; }
+    .card { background: white; padding: 16px; border-radius: 8px; margin-bottom: 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+    input, button { padding: 8px; margin-top: 6px; width: 100%; box-sizing: border-box; }
+    button { background: #2563eb; color: white; border: none; cursor: pointer; }
+    pre { background: #111827; color: #f9fafb; padding: 10px; border-radius: 6px; overflow-x: auto; }
+  </style>
+</head>
+<body>
+  <h1>Trace Platform MVP</h1>
+
+  <div class="card">
+    <h2>1. Scan</h2>
+    <input id="batchId" placeholder="Batch ID" />
+    <input id="location" placeholder="Location" />
+    <input id="deviceId" placeholder="Device ID" />
+    <button onclick="scan()">Run Scan</button>
+    <pre id="scanResult">Result will appear here</pre>
+  </div>
+
+  <div class="card">
+    <h2>2. Trace</h2>
+    <input id="traceBatch" placeholder="Batch ID to trace" />
+    <button onclick="traceBatch()">Show Trace</button>
+    <pre id="traceResult">Trace will appear here</pre>
+  </div>
+
+  <div class="card">
+    <h2>3. Verify</h2>
+    <input id="recordHash" placeholder="Record Hash" />
+    <button onclick="verify()">Verify Record</button>
+    <pre id="verifyResult">Verification will appear here</pre>
+  </div>
+
+  <script>
+    async function scan() {
+      const payload = {
+        batch_id: document.getElementById('batchId').value,
+        location: document.getElementById('location').value,
+        device_id: document.getElementById('deviceId').value
+      };
+      const res = await fetch('/scan', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      document.getElementById('scanResult').textContent = JSON.stringify(data, null, 2);
+    }
+
+    async function traceBatch() {
+      const payload = { batch_id: document.getElementById('traceBatch').value };
+      const res = await fetch('/trace', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      document.getElementById('traceResult').textContent = JSON.stringify(data, null, 2);
+    }
+
+    async function verify() {
+      const payload = { record_hash: document.getElementById('recordHash').value };
+      const res = await fetch('/verify', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      document.getElementById('verifyResult').textContent = JSON.stringify(data, null, 2);
+    }
+  </script>
+</body>
+</html>
