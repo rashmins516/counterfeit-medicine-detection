@@ -1,0 +1,1136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MedTrace Intelligence Dashboard</title>
+  <style>
+    :root {
+      --bg: #eef3f7;
+      --panel: #ffffff;
+      --panel-soft: #f8fafc;
+      --text: #102a43;
+      --muted: #52637a;
+      --subtle: #718096;
+      --line: #dce8f2;
+      --green: #1ca66c;
+      --green-2: #dff8ee;
+      --red: #d95454;
+      --red-2: #ffecef;
+      --amber: #b98720;
+      --amber-2: #fff6dc;
+      --blue: #2c6bed;
+      --blue-2: #eaf2ff;
+      --shadow: rgba(19, 47, 83, 0.12);
+      --font: Inter, "Segoe UI", Roboto, Arial, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      margin: 0;
+      font-family: var(--font);
+      color: var(--text);
+      background: var(--bg);
+      min-height: 100vh;
+    }
+
+    .app {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      width: 280px;
+      background: #102a43;
+      color: #eef7fb;
+      padding: 30px 28px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      overflow-y: auto;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 800;
+      font-size: 24px;
+      letter-spacing: -0.03em;
+      margin-bottom: 50px;
+    }
+
+    .brand .logo {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--green), var(--blue));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 24px;
+      box-shadow: 0 12px 30px rgba(44, 107, 237, 0.22);
+    }
+
+    .nav-label {
+      color: #9eb1c6;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+
+    .nav a {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: #dceaf5;
+      text-decoration: none;
+      padding: 12px 12px;
+      margin-bottom: 7px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 700;
+      transition: 260ms ease all;
+    }
+
+    .nav a .icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.05);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+
+    .nav a.active,
+    .nav a:hover {
+      background: linear-gradient(135deg, var(--green), var(--blue));
+      color: white;
+      box-shadow: 0 12px 30px rgba(54, 147, 114, 0.26);
+    }
+
+    .nav a.active .icon,
+    .nav a:hover .icon {
+      background: rgba(255,255,255,0.16);
+    }
+
+    .sidebar-card {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 20px 16px;
+      margin-top: 28px;
+    }
+
+    .sidebar-card .small-label {
+      color: #adc4d8;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.11em;
+      text-transform: uppercase;
+    }
+
+    .sidebar-card .sync {
+      color: #effbf6;
+      font-weight: 800;
+      font-size: 28px;
+      margin-top: 10px;
+    }
+
+    .sidebar-card .sync-line {
+      color: #a1bdce;
+      font-size: 11px;
+      margin-top: 8px;
+    }
+
+    .main {
+      margin-left: 280px;
+      width: calc(100% - 280px);
+      min-width: 0;
+      padding: 24px 34px;
+      background: var(--bg);
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 22px;
+    }
+
+    .crumbs {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--subtle);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+    }
+
+    .crumbs .sep {
+      color: var(--line);
+    }
+
+    .topbar-title {
+      font-size: 32px;
+      font-weight: 900;
+      letter-spacing: -0.035em;
+      color: var(--text);
+      margin-top: 10px;
+    }
+
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .search {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 11px 14px;
+      color: var(--subtle);
+      min-width: 280px;
+      font-weight: 600;
+    }
+
+    .icon-button,
+    .primary-button {
+      border: none;
+      padding: 11px 16px;
+      border-radius: 12px;
+      font-family: var(--font);
+      font-weight: 800;
+      font-size: 12px;
+      cursor: pointer;
+      transition: transform 240ms ease, box-shadow 240ms ease;
+    }
+
+    .icon-button {
+      background: var(--panel);
+      color: var(--text);
+      border: 1px solid var(--line);
+    }
+
+    .primary-button {
+      background: var(--blue);
+      color: #fff;
+      box-shadow: 0 13px 22px rgba(44, 107, 237, 0.24);
+    }
+
+    .icon-button:hover,
+    .primary-button:hover {
+      transform: translateY(-2px);
+    }
+
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(150px, 1fr));
+      gap: 16px;
+      margin: 22px 0 14px;
+    }
+
+    .kpi-card {
+      background: var(--panel);
+      border: 1px solid rgba(255,255,255,0.8);
+      border-radius: 18px;
+      padding: 22px;
+      box-shadow: 0 12px 24px var(--shadow);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .kpi-card:after {
+      content: "";
+      position: absolute;
+      right: -20px;
+      top: -20px;
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      background: var(--line);
+      opacity: 0.3;
+    }
+
+    .kpi-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: var(--subtle);
+      font-weight: 800;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+
+    .kpi-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: var(--blue-2);
+      color: var(--blue);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+
+    .kpi-value {
+      font-weight: 900;
+      font-size: 34px;
+      margin-top: 18px;
+      color: var(--text);
+      letter-spacing: -0.035em;
+    }
+
+    .kpi-meta {
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .kpi-meta span.positive {
+      color: var(--green);
+    }
+
+    .kpi-meta span.warn {
+      color: var(--amber);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: minmax(620px, 2fr) minmax(340px, 1fr);
+      gap: 16px;
+      align-items: stretch;
+    }
+
+    .panel {
+      background: var(--panel);
+      border-radius: 22px;
+      padding: 24px;
+      box-shadow: 0 10px 24px var(--shadow);
+      border: 1px solid rgba(255,255,255,0.9);
+    }
+
+    .panel-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .panel-title h2 {
+      color: var(--text);
+      font-size: 18px;
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      margin: 0;
+    }
+
+    .panel-title .title-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--subtle);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .chart-card {
+      background: var(--panel-soft);
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      padding: 12px;
+      min-height: 250px;
+    }
+
+    .bar-chart {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 12px;
+      height: 170px;
+      margin-top: 10px;
+      padding: 20px 0;
+    }
+
+    .bar-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: end;
+      gap: 9px;
+      height: 100%;
+      flex: 1;
+    }
+
+    .bar {
+      width: 30px;
+      border-radius: 8px 8px 0 0;
+      background: linear-gradient(180deg, var(--blue), var(--green));
+      min-height: 12px;
+      box-shadow: 0 8px 16px rgba(44, 107, 237, 0.14);
+    }
+
+    .bar-wrap .day {
+      color: var(--subtle);
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .segmented {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--panel-soft);
+      padding: 4px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+    }
+
+    .segment {
+      background: transparent;
+      border: none;
+      padding: 10px 14px;
+      font-family: var(--font);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    .segment.active {
+      color: var(--blue);
+      background: var(--blue-2);
+    }
+
+    .scanner-panel {
+      background: var(--panel);
+      border-radius: 22px;
+      padding: 24px;
+      box-shadow: 0 10px 24px var(--shadow);
+      border: 1px solid rgba(255,255,255,0.9);
+      margin-top: 16px;
+    }
+
+    .scanner-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .drop-area {
+      min-height: 250px;
+      border-radius: 18px;
+      border: 2px dashed var(--line);
+      background: var(--panel-soft);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 14px;
+      color: var(--subtle);
+      font-weight: 800;
+      text-align: center;
+      cursor: pointer;
+      transition: 260ms ease all;
+    }
+
+    .drop-area:hover {
+      border-color: var(--blue);
+      color: var(--blue);
+      background: var(--blue-2);
+    }
+
+    .drop-area span.drop-icon {
+      width: 56px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 30px;
+      border-radius: 50%;
+      background: var(--panel);
+      border: 1px solid var(--line);
+    }
+
+    .scan-form {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .scan-form input {
+      flex: 1 1 48%;
+      min-width: 120px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: var(--panel-soft);
+      color: var(--text);
+      font-family: var(--font);
+      font-weight: 600;
+    }
+
+    .scan-form button {
+      flex: 1 1 100%;
+      margin-top: 4px;
+      padding: 12px 16px;
+      border-radius: 14px;
+      background: var(--blue);
+      color: white;
+      border: none;
+      font-weight: 800;
+      font-family: var(--font);
+      cursor: pointer;
+      transition: transform 260ms ease;
+    }
+
+    .scan-form button:hover {
+      transform: translateY(-2px);
+    }
+
+    .result-panel {
+      background: var(--panel-soft);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 16px;
+      margin-top: 18px;
+    }
+
+    .result-line {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid var(--line);
+      padding: 12px 0;
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 800;
+    }
+
+    .result-line:last-child {
+      border-bottom: none;
+    }
+
+    .badge {
+      padding: 7px 12px;
+      border-radius: 99px;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      border: 1px solid transparent;
+    }
+
+    .badge.authentic {
+      background: var(--green-2);
+      color: var(--green);
+      border-color: var(--green);
+    }
+
+    .badge.suspicious {
+      background: var(--amber-2);
+      color: var(--amber);
+      border-color: var(--amber);
+    }
+
+    .badge.fake {
+      background: var(--red-2);
+      color: var(--red);
+      border-color: var(--red);
+    }
+
+    .map-panel {
+      min-height: 340px;
+      background-image: radial-gradient(#ddedf8 1px, transparent 1px);
+      background-size: 22px 22px;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .map-grid {
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(var(--line) 1px, transparent 1px);
+      background-size: 24px 24px;
+      mask-image: linear-gradient(180deg, rgba(0,0,0,1), transparent 100%);
+    }
+
+    .pin {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 0 6px rgba(28,166,108,0.12), 0 0 0 10px rgba(28,166,108,0.08);
+      transform: translate(-50%, -50%);
+    }
+
+    .pin.red { background: var(--red); box-shadow: 0 0 0 6px rgba(217,84,84,0.14); }
+    .pin.amber { background: var(--amber); box-shadow: 0 0 0 6px rgba(185,135,32,0.14); }
+
+    .pin.one { left: 30%; top: 30%; }
+    .pin.two { left: 60%; top: 50%; }
+    .pin.three { left: 70%; top: 70%; }
+
+    .map-line {
+      position: absolute;
+      width: 110px;
+      height: 2px;
+      border-top: 2px dashed var(--blue);
+      left: 30%;
+      top: 30%;
+      transform: rotate(35deg);
+      opacity: 0.8;
+    }
+
+    .table-wrap {
+      width: 100%;
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+
+    thead {
+      background: var(--panel-soft);
+      color: var(--subtle);
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    th, td {
+      padding: 13px 10px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      white-space: nowrap;
+    }
+
+    td {
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 8px;
+      vertical-align: middle;
+      background: var(--green);
+    }
+
+    .status-dot.red { background: var(--red); }
+    .status-dot.amber { background: var(--amber); }
+
+    .queue-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .chart-legend {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--muted);
+      margin-top: 8px;
+    }
+
+    .legend-swatch {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 3px;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+
+    .legend-swatch.blue { background: var(--blue); }
+    .legend-swatch.green { background: var(--green); }
+    .legend-swatch.red { background: var(--red); }
+
+    .mobile-only { display: none; }
+
+    @media screen and (max-width: 1100px) {
+      .app { flex-wrap: wrap; }
+      .sidebar { position: relative; width: 100%; min-height: auto; }
+      .main { margin-left: 0; width: 100%; }
+      .grid { grid-template-columns: 1fr; }
+      .kpi-row { grid-template-columns: repeat(2, minmax(160px, 1fr)); }
+    }
+
+    @media screen and (max-width: 760px) {
+      .kpi-row { grid-template-columns: 1fr; }
+      .scanner-layout { grid-template-columns: 1fr; }
+      .topbar { align-items: stretch; flex-wrap: wrap; }
+      .search { min-width: 180px; }
+      .main { padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <span class="logo">✦</span>
+        <span>MedTrace</span>
+      </div>
+
+      <div class="nav-label">Command Center</div>
+      <nav class="nav">
+        <a href="#overview-section" class="active" data-target="overview-section">
+          <span class="icon">◌</span>
+          <span>Overview</span>
+        </a>
+        <a href="#verify-section" data-target="verify-section">
+          <span class="icon">⌁</span>
+          <span>Verify Scan</span>
+        </a>
+        <a href="#trace-section" data-target="trace-section">
+          <span class="icon">↯</span>
+          <span>Trace Graph</span>
+        </a>
+        <a href="#review-section" data-target="review-section">
+          <span class="icon">☑</span>
+          <span>Review Queue</span>
+        </a>
+        <a href="#export-data" data-export="json">
+          <span class="icon">⇩</span>
+          <span>Export Data</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-card">
+        <div class="small-label">System Health</div>
+        <div class="sync" id="system-health">Checking...</div>
+        <div class="sync-line" id="storage-health">Loading service status</div>
+      </div>
+
+      <div class="sidebar-card">
+        <div class="small-label">Last scan</div>
+        <div class="sync-line" id="last-scan">No scans yet</div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <section class="topbar" id="overview-section">
+        <div>
+          <div class="crumbs">
+            <span>Dashboard</span>
+            <span class="sep">/</span>
+            <span>Counterfeit Intelligence</span>
+          </div>
+          <div class="topbar-title">Supply Chain Security</div>
+        </div>
+        <div class="topbar-actions">
+          <input class="search" placeholder="Search batches, SKUs, locations" />
+          <button class="icon-button" id="refresh-button">● Live</button>
+          <button class="primary-button" id="create-scan-button">+ Create Scan</button>
+        </div>
+      </section>
+
+      <section class="kpi-row">
+        <article class="kpi-card">
+          <div class="kpi-top">
+            <span>Total scanned</span>
+            <span class="kpi-icon">◈</span>
+          </div>
+          <div class="kpi-value" id="total-scanned">0</div>
+          <div class="kpi-meta">
+            <span class="positive" id="genuine-count">0 genuine</span>
+            <span>ledger records</span>
+          </div>
+        </article>
+
+        <article class="kpi-card">
+          <div class="kpi-top">
+            <span>Genuine rate</span>
+            <span class="kpi-icon">✓</span>
+          </div>
+          <div class="kpi-value" id="genuine-rate">0%</div>
+          <div class="kpi-meta">
+            <span class="positive">live</span>
+            <span>model output</span>
+          </div>
+        </article>
+
+        <article class="kpi-card">
+          <div class="kpi-top">
+            <span>Flagged fakes</span>
+            <span class="kpi-icon">!</span>
+          </div>
+          <div class="kpi-value" id="counterfeit-count">0</div>
+          <div class="kpi-meta">
+            <span class="warn">live</span>
+            <span>review queue</span>
+          </div>
+        </article>
+
+        <article class="kpi-card">
+          <div class="kpi-top">
+            <span>Active batches</span>
+            <span class="kpi-icon">◎</span>
+          </div>
+          <div class="kpi-value" id="active-batches">0</div>
+          <div class="kpi-meta">
+            <span class="positive">live</span>
+            <span>unique batches</span>
+          </div>
+        </article>
+      </section>
+
+      <section class="grid">
+        <article class="panel">
+          <section class="panel-title">
+            <h2>Verification Velocity</h2>
+            <div class="title-actions">
+              <div class="segmented" id="range-selector">
+                <button class="segment active" data-days="7">7D</button>
+                <button class="segment" data-days="14">14D</button>
+                <button class="segment" data-days="30">30D</button>
+              </div>
+            </div>
+          </section>
+          <section class="chart-card">
+            <div class="bar-chart" id="velocity-chart">
+              <div class="bar-wrap">
+                <div class="bar" style="height: 74%;"></div>
+                <div class="day">Mon</div>
+              </div>
+              <div class="bar-wrap">
+                <div class="bar" style="height: 45%;"></div>
+                <div class="day">Tue</div>
+              </div>
+              <div class="bar-wrap">
+                <div class="bar" style="height: 92%;"></div>
+                <div class="day">Wed</div>
+              </div>
+              <div class="bar-wrap">
+                <div class="bar" style="height: 61%;"></div>
+                <div class="day">Thu</div>
+              </div>
+              <div class="bar-wrap">
+                <div class="bar" style="height: 80%;"></div>
+                <div class="day">Fri</div>
+              </div>
+              <div class="bar-wrap">
+                <div class="bar" style="height: 68%;"></div>
+                <div class="day">Sat</div>
+              </div>
+              <div class="bar-wrap">
+                <div class="bar" style="height: 95%;"></div>
+                <div class="day">Sun</div>
+              </div>
+            </div>
+          </section>
+          <section class="chart-legend">
+            <span><span class="legend-swatch blue"></span>Authenticity score</span>
+            <span><span class="legend-swatch green"></span>Genuine checks</span>
+            <span><span class="legend-swatch red"></span>Flagged volume</span>
+          </section>
+        </article>
+
+        <article class="panel">
+          <section class="panel-title">
+            <h2>Signal Summary</h2>
+            <span class="title-actions">Live</span>
+          </section>
+          <section class="chart-card">
+            <div class="chart-legend">
+              <span><span class="legend-swatch green"></span>Genuine</span>
+              <span><span class="legend-swatch red"></span>Counterfeit</span>
+            </div>
+            <div class="bar-chart" style="height: 205px; align-items:center;">
+              <div class="bar-wrap" style="height: 190px;">
+                <div class="bar" style="height: 86%; width: 58px; background: linear-gradient(180deg, var(--green), var(--green));"></div>
+                <div class="bar" style="height: 14%; width: 58px; background: linear-gradient(180deg, var(--red), var(--red));"></div>
+              </div>
+            </div>
+          </section>
+        </article>
+      </section>
+
+      <section class="scanner-panel" id="verify-section">
+        <section class="panel-title">
+          <h2>Live Verification & Scanner</h2>
+          <div class="title-actions">
+            <span class="status-dot"></span>
+            <span>Scanner Online</span>
+          </div>
+        </section>
+
+        <section class="scanner-layout">
+          <article>
+            <form class="drop-area" id="verify-form">
+              <span class="drop-icon">⇪</span>
+              <label for="image-input">Choose medicine image</label>
+              <input id="image-input" name="image" type="file" accept="image/jpeg,image/png,image/webp" required />
+              <small>Runs the trained authenticity model and commits the result to the ledger.</small>
+              <button type="submit" class="primary-button">Verify image</button>
+              <output id="scan-status" role="status">Ready for an image</output>
+            </form>
+            <div class="result-panel">
+              <div class="result-line">
+                <span>Authenticity Confidence</span>
+                <span class="badge" id="scan-confidence">-</span>
+              </div>
+              <div class="result-line">
+                <span>Risk Rating</span>
+                <span class="badge" id="scan-verdict">-</span>
+              </div>
+              <div class="result-line">
+                <span>Predicted SKU</span>
+                <span class="badge" id="scan-sku">-</span>
+              </div>
+              <div class="result-line">
+                <span>Ledger Transaction</span>
+                <span class="badge" id="scan-ledger">-</span>
+              </div>
+            </div>
+          </article>
+
+          <article>
+            <div class="scan-form">
+              <input id="batch-id" placeholder="Batch ID" value="demo-batch" />
+              <input id="location" placeholder="Location" value="local" />
+              <input id="device-id" placeholder="Device ID" value="browser" />
+              <button type="submit" form="verify-form">Verify image</button>
+            </div>
+          </article>
+        </section>
+      </section>
+
+      <section class="grid" style="margin-top:16px;" id="trace-section">
+        <article class="panel">
+          <section class="panel-title">
+            <h2>Trace Graph & Route Map</h2>
+            <span class="title-actions">Route View</span>
+          </section>
+          <section class="map-panel" id="trace-map">
+            <div class="map-grid"></div>
+            <div class="map-line"></div>
+            <span class="pin one"></span>
+            <span class="pin two red"></span>
+            <span class="pin three amber"></span>
+          </section>
+        </article>
+
+        <article class="panel">
+          <section class="panel-title">
+            <h2>Route Timeline</h2>
+            <span class="title-actions">SKU lineage</span>
+          </section>
+          <section class="chart-card">
+            <div class="scan-form">
+              <input id="trace-batch-id" placeholder="Batch ID to trace" value="demo-batch" />
+              <button type="button" id="trace-button">Trace batch</button>
+            </div>
+            <div id="trace-summary">
+              <div class="result-line"><span>Earliest recorded location</span><span class="badge" id="trace-origin">-</span></div>
+              <div class="result-line"><span>Recorded route</span><span class="badge" id="trace-route">-</span></div>
+              <div class="result-line"><span>Counterfeit hotspots</span><span class="badge fake" id="trace-hotspots">-</span></div>
+            </div>
+          </section>
+        </article>
+      </section>
+
+      <section class="panel" style="margin-top:16px;" id="review-section">
+        <section class="panel-title">
+          <h2>Admin Review Queue</h2>
+          <div class="title-actions">
+            <button class="icon-button" id="export-csv">CSV</button>
+            <button class="icon-button" id="export-json">JSON</button>
+          </div>
+        </section>
+
+        <section class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Batch</th>
+                <th>SKU</th>
+                <th>Location</th>
+                <th>Device</th>
+                <th>Confidence</th>
+                <th>Status</th>
+                <th>Review</th>
+              </tr>
+            </thead>
+            <tbody id="ledger-table-body"><tr><td colspan="7">No prediction records yet.</td></tr></tbody>
+          </table>
+        </section>
+      </section>
+    </main>
+  </div>
+  <script>
+    const byId = (id) => document.getElementById(id);
+
+    function renderLedger(data) {
+      const stats = data.stats || {};
+      byId('total-scanned').textContent = stats.total || 0;
+      byId('genuine-count').textContent = `${stats.genuine || 0} genuine`;
+      byId('genuine-rate').textContent = `${stats.genuine_rate || 0}%`;
+      byId('counterfeit-count').textContent = stats.counterfeit || 0;
+      byId('active-batches').textContent = new Set((data.entries || []).map((entry) => entry.batch_id)).size;
+
+      const rows = (data.entries || []).map((entry) => {
+        const counterfeit = entry.is_genuine === false;
+        const status = counterfeit ? 'Counterfeit' : 'Genuine';
+        const badge = counterfeit ? 'fake' : 'authentic';
+        return `<tr><td>${entry.batch_id || '-'}</td><td>${entry.predicted_sku || '-'}</td><td>${entry.location || '-'}</td><td>${entry.device_id || '-'}</td><td>${Math.round((entry.confidence || 0) * 100)}%</td><td><span class="badge ${badge}">${status}</span></td><td>${entry.filename || '-'}</td></tr>`;
+      }).join('');
+      byId('ledger-table-body').innerHTML = rows || '<tr><td colspan="7">No prediction records yet.</td></tr>';
+      if (data.entries && data.entries[0]) byId('last-scan').textContent = new Date(data.entries[0].timestamp).toLocaleString();
+    }
+
+    async function refreshLedger() {
+      const response = await fetch('/api/ledger');
+      if (!response.ok) throw new Error('Ledger request failed');
+      renderLedger(await response.json());
+    }
+
+    async function refreshHealth() {
+      const response = await fetch('/health');
+      const health = await response.json();
+      byId('system-health').textContent = health.ok ? 'Online' : 'Unavailable';
+      byId('storage-health').textContent = `Model ${health.model_loaded ? 'loaded' : 'unavailable'} · JSON ledger online`;
+    }
+
+    async function refreshVelocity(days = 7) {
+      const response = await fetch(`/api/dashboard?days=${days}`);
+      const data = await response.json();
+      const counts = data.counts || [];
+      const maximum = Math.max(...counts, 1);
+      const labels = data.labels || [];
+      byId('velocity-chart').innerHTML = counts.length ? counts.map((count, index) => {
+        const label = labels[index] ? labels[index].slice(5) : '-';
+        return `<div class="bar-wrap"><div class="bar" style="height:${Math.max(8, count / maximum * 92)}%;"></div><div class="day">${label}</div></div>`;
+      }).join('') : '<div class="day">No scans in this period</div>';
+    }
+
+    async function traceBatch() {
+      const batchId = byId('trace-batch-id').value.trim();
+      if (!batchId) return;
+      const response = await fetch(`/api/trace/${encodeURIComponent(batchId)}`);
+      const data = await response.json();
+      byId('trace-origin').textContent = data.origin || 'No recorded origin';
+      byId('trace-route').textContent = data.route && data.route.length ? data.route.join(' → ') : 'No route records';
+      byId('trace-hotspots').textContent = data.counterfeit_locations && data.counterfeit_locations.length ? data.counterfeit_locations.join(', ') : 'None recorded';
+      byId('trace-map').setAttribute('title', data.route && data.route.length ? `Recorded route: ${data.route.join(' → ')}` : 'No route records for this batch');
+    }
+
+    function downloadLedger(format) {
+      fetch('/api/ledger').then((response) => response.json()).then((data) => {
+        const entries = data.entries || [];
+        let body;
+        let type;
+        let extension;
+        if (format === 'csv') {
+          const columns = ['timestamp', 'filename', 'batch_id', 'location', 'device_id', 'verdict', 'confidence'];
+          body = [columns.join(','), ...entries.map((entry) => columns.map((column) => JSON.stringify(entry[column] ?? '')).join(','))].join('\n');
+          type = 'text/csv';
+          extension = 'csv';
+        } else {
+          body = JSON.stringify(entries, null, 2);
+          type = 'application/json';
+          extension = 'json';
+        }
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(new Blob([body], { type }));
+        link.download = `prediction-ledger.${extension}`;
+        link.click();
+        URL.revokeObjectURL(link.href);
+      });
+    }
+
+    document.querySelectorAll('.nav a[data-target]').forEach((link) => link.addEventListener('click', (event) => {
+      event.preventDefault();
+      document.getElementById(link.dataset.target).scrollIntoView({ behavior: 'smooth' });
+      document.querySelectorAll('.nav a').forEach((item) => item.classList.remove('active'));
+      link.classList.add('active');
+    }));
+    document.querySelectorAll('.nav a[data-export]').forEach((link) => link.addEventListener('click', (event) => {
+      event.preventDefault();
+      downloadLedger(link.dataset.export);
+    }));
+    byId('create-scan-button').addEventListener('click', () => {
+      byId('verify-section').scrollIntoView({ behavior: 'smooth' });
+      byId('image-input').click();
+    });
+    byId('refresh-button').addEventListener('click', () => Promise.all([refreshLedger(), refreshHealth(), refreshVelocity()]));
+    document.querySelectorAll('#range-selector .segment').forEach((button) => button.addEventListener('click', () => {
+      document.querySelectorAll('#range-selector .segment').forEach((item) => item.classList.remove('active'));
+      button.classList.add('active');
+      refreshVelocity(Number(button.dataset.days));
+    }));
+    byId('trace-button').addEventListener('click', traceBatch);
+    byId('export-csv').addEventListener('click', () => downloadLedger('csv'));
+    byId('export-json').addEventListener('click', () => downloadLedger('json'));
+    document.querySelector('.search').addEventListener('input', (event) => {
+      const query = event.target.value.toLowerCase();
+      document.querySelectorAll('#ledger-table-body tr').forEach((row) => { row.hidden = query && !row.textContent.toLowerCase().includes(query); });
+    });
+
+    byId('verify-form').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const file = byId('image-input').files[0];
+      if (!file) return;
+      const form = new FormData();
+      form.append('image', file);
+      const query = new URLSearchParams({ batch_id: byId('batch-id').value || 'demo-batch', location: byId('location').value || 'local', device_id: byId('device-id').value || 'browser' });
+      byId('scan-status').textContent = 'Running model inference...';
+      try {
+        const response = await fetch(`/api/v1/verify?${query}`, { method: 'POST', body: form });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.detail || 'Verification failed');
+        const counterfeit = result.is_genuine === false;
+        byId('scan-confidence').textContent = `${Math.round((result.confidence || 0) * 100)}%`;
+        byId('scan-verdict').textContent = result.verdict || (counterfeit ? 'Counterfeit' : 'Genuine');
+        byId('scan-sku').textContent = result.predicted_sku || '-';
+        byId('scan-ledger').textContent = result.record_hash ? 'Committed' : 'Not committed';
+        byId('scan-status').textContent = counterfeit ? 'Counterfeit signal detected' : 'Genuine signal detected';
+        await refreshLedger();
+      } catch (error) {
+        byId('scan-status').textContent = error.message;
+      }
+    });
+
+    Promise.all([refreshLedger(), refreshHealth(), refreshVelocity(), traceBatch()]).catch((error) => { byId('scan-status').textContent = error.message; });
+  </script>
+</body>
+</html>

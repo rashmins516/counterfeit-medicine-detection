@@ -1,0 +1,14 @@
+# MVP runtime
+pillow
+numpy
+scikit-learn
+joblib
+psycopg2-binary
+neo4j
+fastapi
+uvicorn
+python-multipart
+
+# Optional future services
+# fastapi
+# uvicorn
